@@ -1,0 +1,38 @@
+{
+    // These paths depend on your installed ESP-IDF version, currently set for v5.3.2
+    "C_Cpp.intelliSenseEngine": "default",
+    "idf.espIdfPathWin": "C:\\Users\\${env:USERNAME}\\esp\\v5.3.2\\esp-idf",
+    "idf.openOcdConfigs": [
+        "board/esp32s3-builtin.cfg"
+    ],
+    "idf.portWin": "COM4",
+    "idf.toolsPathWin": "C:\\Users\\${env:USERNAME}\\.espressif",
+    "idf.flashType": "JTAG",
+    "idf.customExtraVars":
+    {
+        "openocdPath": "C:\\Users\\${env:USERNAME}\\.espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20241016\\openocd-esp32\\bin",
+        "debuggerPath": "C:\\Users\\${env:USERNAME}\\.espressif\\tools\\xtensa-esp-elf-gdb\\14.2_20240403\\xtensa-esp-elf-gdb\\bin\\xtensa-esp32s3-elf-gdb.exe",
+    },
+    "files.associations": {
+        "cstdint": "cpp",
+        "cstddef": "cpp",
+        "format": "cpp",
+        "*.tcc": "cpp",
+        "unordered_map": "cpp",
+        "istream": "cpp",
+        "numeric": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "parameter.h": "c",
+        "cannon_mqtt_h": "cpp",
+        "array": "cpp",
+        "charconv": "cpp",
+        "compare": "cpp",
+        "functional": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "variant": "cpp"
+    }
+}
