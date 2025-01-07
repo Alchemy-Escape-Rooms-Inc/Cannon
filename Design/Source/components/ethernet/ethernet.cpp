@@ -1,8 +1,14 @@
 #include "ethernet.h"
 
+#include "esp_eth_netif_glue.h"
+
 #include "esp_log.h"
 #include "esp_check.h"
+#include "esp_eth.h"
+#include "esp_event.h"
+#include "ethernet_init.h"
 #include "esp_mac.h"
+#include "esp_netif.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 #include "driver/spi_master.h"
@@ -31,7 +37,7 @@ namespace Ethernet
     {
         .spi_cs_gpio = WIZNET_CS,
         .int_gpio = WIZNET_INT,
-        .polling_ms = 10,
+        .polling_ms = 0,
         .phy_reset_gpio = WIZNET_RST,
         .phy_addr = 1,
         .mac_addr = 0,
@@ -109,9 +115,9 @@ namespace Ethernet
                 .spics_io_num = spi_eth_module_config->spi_cs_gpio,
                 .queue_size = 20
             };
+
             // Init vendor specific MAC config to default, and create new SPI Ethernet MAC instance
             // and new PHY instance based on board configuration
-
             eth_w5500_config_t w5500_config = ETH_W5500_DEFAULT_CONFIG(SPI_HOST, &spi_devcfg);
             w5500_config.int_gpio_num = spi_eth_module_config->int_gpio;
             w5500_config.poll_period_ms = spi_eth_module_config->polling_ms;
@@ -167,6 +173,28 @@ namespace Ethernet
 
         esp_eth_handle = eth_init_spi(&spi_eth_module_config, NULL, NULL);
         ESP_RETURN_VOID_ON_FALSE(esp_eth_handle, ESP_FAIL, TAG, "SPI Ethernet init failed");
+
+        // Initialize TCP/IP network interface aka the esp-netif (should be called only once in application)
+        ESP_RETURN_VOID_ON_ERROR(esp_netif_init(), TAG, "NETIF Init Failed");
+        // Create default event loop that running in background
+        ESP_RETURN_VOID_ON_ERROR(esp_event_loop_create_default(), TAG, "Event Loop Create Failed");
+
+        esp_netif_t* eth_netif;
+        esp_eth_netif_glue_handle_t eth_netif_glue;
+
+        // Create instance(s) of esp-netif for Ethernet(s)
+
+        // Use ESP_NETIF_DEFAULT_ETH when just one Ethernet interface is used and you don't need to modify
+        // default esp-netif configuration parameters.
+        esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
+        eth_netif = esp_netif_new(&cfg);
+        eth_netif_glue = esp_eth_new_netif_glue(esp_eth_handle);
+
+        // Attach Ethernet driver to TCP/IP stack
+        ESP_RETURN_VOID_ON_ERROR(esp_netif_attach(eth_netif, eth_netif_glue), TAG, "ESP NETIF Attach Failed");
+
+        // Start Ethernet
+        ESP_RETURN_VOID_ON_ERROR(esp_eth_start(esp_eth_handle), TAG, "ESP ETH Start Failed");
     }
 }
 

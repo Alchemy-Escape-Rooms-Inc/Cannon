@@ -22,29 +22,29 @@ namespace Cannon
 
         Pins::initPin(firePin, GPIO_MODE_INPUT);
 
-        aimSensor.init(1);
-        reloadSensor.begin();
+        //aimSensor.init(1);
+        //reloadSensor.begin();
         fogMachine.init();
     }
 
     void Handler::process()
     {
         VL53L0X_RangingMeasurementData_t measure;
-        reloadSensor.rangingTest(&measure);
+        //reloadSensor.rangingTest(&measure);
 
-        if (measure.RangeStatus == 0) // != 4)
-        { 
-            checkLoaded(measure.RangeMilliMeter);
-        }
+        // if (measure.RangeStatus == 0) // != 4)
+        // { 
+        //     checkLoaded(measure.RangeMilliMeter);
+        // }
         
-        if (aimSensor.update())
-        {
-            if (Time::elapsed(lastAngleUpdate, 100))
-            {
-                lastAngleUpdate = Time::ms();
-                horTopic.publish(aimSensor.getAngle());
-            }
-        }
+        // if (aimSensor.update())
+        // {
+        //     if (Time::elapsed(lastAngleUpdate, 100))
+        //     {
+        //         lastAngleUpdate = Time::ms();
+        //         horTopic.publish(aimSensor.getAngle());
+        //     }
+        // }
 
         if (Pins::getInput(firePin))
         {

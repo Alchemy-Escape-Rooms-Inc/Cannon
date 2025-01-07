@@ -24,7 +24,7 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-#define CONFIG_BROKER_URL "http://192.168.0.175"
+#define CONFIG_BROKER_URL "mqtt://192.168.0.175"
 
 namespace MQTT
 {
@@ -131,6 +131,7 @@ namespace MQTT
             esp_mqtt_client_config_t mqtt_cfg = { 0 };
 
             mqtt_cfg.broker.address.uri = CONFIG_BROKER_URL;
+            mqtt_cfg.broker.address.port = 1883;
 
             client = esp_mqtt_client_init(&mqtt_cfg);
             /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
@@ -153,9 +154,9 @@ namespace MQTT
         esp_log_level_set("transport", ESP_LOG_VERBOSE);
         esp_log_level_set("outbox", ESP_LOG_VERBOSE);
 
-        ESP_ERROR_CHECK(nvs_flash_init());
-        ESP_ERROR_CHECK(esp_netif_init());
-        ESP_ERROR_CHECK(esp_event_loop_create_default());
+        // ESP_ERROR_CHECK(nvs_flash_init());
+        // ESP_ERROR_CHECK(esp_netif_init());
+        // ESP_ERROR_CHECK(esp_event_loop_create_default());
 
         mqtt_app_start();
     }

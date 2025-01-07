@@ -5,8 +5,8 @@
 
 #include <driver/i2c_master.h>
 
-#define I2C_SCL GPIO_NUM_1
-#define I2C_SDA GPIO_NUM_2
+#define I2C_SCL GPIO_NUM_18
+#define I2C_SDA GPIO_NUM_16
 
 namespace I2C
 {

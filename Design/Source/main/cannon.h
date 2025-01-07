@@ -27,8 +27,8 @@ namespace Cannon
 
     private:    
         // Sensors and Pins
-        static constexpr gpio_num_t firePin = GPIO_NUM_4;
-        static constexpr gpio_num_t iotPin = GPIO_NUM_5;
+        static constexpr gpio_num_t firePin = GPIO_NUM_1;
+        static constexpr gpio_num_t iotPin = GPIO_NUM_2;
 
         ALS31300::Sensor aimSensor;
         VL53L0X reloadSensor;

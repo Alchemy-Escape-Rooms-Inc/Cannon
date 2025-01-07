@@ -5,7 +5,7 @@
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ],
-    "idf.portWin": "COM4",
+    "idf.portWin": "COM8",
     "idf.toolsPathWin": "C:\\Users\\${env:USERNAME}\\.espressif",
     "idf.flashType": "JTAG",
     "idf.customExtraVars":

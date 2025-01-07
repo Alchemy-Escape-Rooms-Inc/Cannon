@@ -1,3 +1,3 @@
-idf_component_register(SRCS "ethernet.cpp"
-                       PRIV_REQUIRES esp_driver_gpio esp_eth
+idf_component_register(SRCS "ethernet.cpp" "ethernet_init.c"
+                       PRIV_REQUIRES esp_driver_gpio esp_eth esp_netif
                        INCLUDE_DIRS ".")
