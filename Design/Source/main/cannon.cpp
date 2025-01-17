@@ -25,7 +25,6 @@ namespace Cannon
         I2C::init();
         aimSensor.init(1);
         reloadSensor.init();
-        fogMachine.init();
 
         esp_log_level_set(TAG, ESP_LOG_VERBOSE);
     }
@@ -36,6 +35,8 @@ namespace Cannon
         else
         {
             if (reloadSensor.triggered()) doReload();
+            // clear error interrupt
+            //else reloadSensor.clearInterrupts();
         }
 
         checkLoaded();
@@ -71,8 +72,6 @@ namespace Cannon
         {
             checkFire();
         }
-
-        fogMachine.process();
     }
 
     void Handler::doReload()
@@ -104,7 +103,7 @@ namespace Cannon
             loadedTime = 0;
             firedTopic.publish();
             loadedTopic.reset();
-            fogMachine.trigger();
+            FogMachine::trigger();
         }
     }
 }

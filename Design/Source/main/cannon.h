@@ -37,7 +37,6 @@ namespace Cannon
 
         ALS31300::Sensor aimSensor;
         VL6180X reloadSensor{reloadEnablePin, reloadIntPin};
-        FogMachine fogMachine;
 
         // State
         bool loaded = false;

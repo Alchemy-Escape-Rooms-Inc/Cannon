@@ -56,6 +56,7 @@ namespace Pins
 {
     void init();
     void initPin(gpio_num_t pin, gpio_mode_t mode, bool defaultHigh = false);
+    void resetPin(gpio_num_t pin);
 
     void setOutput(gpio_num_t pin, bool high);
     bool getOutput(gpio_num_t pin);

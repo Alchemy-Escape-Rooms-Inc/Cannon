@@ -45,6 +45,7 @@
         "initializer_list": "cpp",
         "mutex": "cpp",
         "span": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "future": "cpp"
     }
 }

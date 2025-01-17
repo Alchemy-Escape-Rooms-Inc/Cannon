@@ -2,16 +2,8 @@
 
 #include "esp_dmx.h"
 
-class FogMachine
+namespace FogMachine
 {
-public:
-    void init();
+    void task(void*);
     void trigger();
-    void process();
-    int64_t triggerTime = 0;
-
-private:
-    void sendDmxRequest(bool enable);
-
-    static constexpr dmx_port_t dmx_num = DMX_NUM_1;
 };

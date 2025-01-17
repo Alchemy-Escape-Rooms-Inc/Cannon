@@ -6,9 +6,15 @@ namespace Pins
 {
     void initPin(gpio_num_t pin, gpio_mode_t mode, bool defaultHigh)
     {
-        gpio_reset_pin(pin); // Some pins are default configured and need to be reset to be used, it's not enough to just set pin direction and level
+        resetPin(pin);
         gpio_set_direction(pin, mode);
         if (mode == GPIO_MODE_OUTPUT) gpio_set_level(pin, defaultHigh);
+    }
+
+    void resetPin(gpio_num_t pin)
+    {
+        // Some pins are default configured and need to be reset to be used, it's not enough to just set pin direction and level
+        gpio_reset_pin(pin); 
     }
 
     void init()
