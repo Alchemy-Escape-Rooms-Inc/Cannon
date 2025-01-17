@@ -33,7 +33,7 @@ namespace MQTT
         std::map<std::string, SubscribeCallback> callbacks;
         esp_mqtt_client_handle_t client;
 
-        const char *TAG = "mqtt_example";
+        const char *TAG = "MQTT";
 
         void log_error_if_nonzero(const char *message, int error_code)
         {
@@ -53,17 +53,17 @@ namespace MQTT
             {
             case MQTT_EVENT_CONNECTED:
                 ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-                msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
-                ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+                // msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
+                // ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
 
-                msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
-                ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+                // msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
+                // ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-                msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 1);
-                ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+                // msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 1);
+                // ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-                msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
-                ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
+                // msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
+                // ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
                 break;
 
             case MQTT_EVENT_DISCONNECTED:
@@ -72,8 +72,8 @@ namespace MQTT
 
             case MQTT_EVENT_SUBSCRIBED:
                 ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-                msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0, 0);
-                ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+                // msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0, 0);
+                // ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
                 break;
 
             case MQTT_EVENT_UNSUBSCRIBED:
@@ -125,59 +125,36 @@ namespace MQTT
                 break;
             }
         }
-
-        void mqtt_app_start(void)
-        {
-            esp_mqtt_client_config_t mqtt_cfg = { 0 };
-
-            mqtt_cfg.broker.address.uri = CONFIG_BROKER_URL;
-            mqtt_cfg.broker.address.port = 1883;
-
-            client = esp_mqtt_client_init(&mqtt_cfg);
-            /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
-            esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t) ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
-            esp_mqtt_client_start(client);
-        }
     }
 
-    void init()
+    bool init()
     {
-        ESP_LOGI(TAG, "[APP] Startup..");
-        ESP_LOGI(TAG, "[APP] Free memory: %" PRIu32 " bytes", esp_get_free_heap_size());
-        ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
+        esp_log_level_set(TAG, ESP_LOG_NONE);
 
-        esp_log_level_set("*", ESP_LOG_INFO);
-        esp_log_level_set("mqtt_client", ESP_LOG_VERBOSE);
-        esp_log_level_set("mqtt_example", ESP_LOG_VERBOSE);
-        esp_log_level_set("transport_base", ESP_LOG_VERBOSE);
-        esp_log_level_set("esp-tls", ESP_LOG_VERBOSE);
-        esp_log_level_set("transport", ESP_LOG_VERBOSE);
-        esp_log_level_set("outbox", ESP_LOG_VERBOSE);
+        esp_mqtt_client_config_t mqtt_cfg = { 0 };
 
-        // ESP_ERROR_CHECK(nvs_flash_init());
-        // ESP_ERROR_CHECK(esp_netif_init());
-        // ESP_ERROR_CHECK(esp_event_loop_create_default());
+        mqtt_cfg.broker.address.uri = CONFIG_BROKER_URL;
+        mqtt_cfg.broker.address.port = 1883;
 
-        mqtt_app_start();
+        client = esp_mqtt_client_init(&mqtt_cfg);
+        
+        esp_err_t err = esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t) ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
+        if (err != ESP_OK) return false;
+        err = esp_mqtt_client_start(client);
+        return err == ESP_OK;
     }
 
     void publish(std::string topic, std::string data)
     {
-        int msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
+        int msg_id = esp_mqtt_client_publish(client, topic.c_str(), data.c_str(), data.length(), 1, false);
 
-        if (msg_id != -1)
-        {
-            ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
-        }
-        else
-        {
-            ESP_LOGI(TAG, "sent subscribe failed, msg_id=%d", msg_id);
-        }
+        if (msg_id != -1) ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+        else ESP_LOGI(TAG, "sent publish failed, msg_id=%d", msg_id);
     }
 
     void subscribe(std::string topic, SubscribeCallback callback)
     {
-        int msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
+        int msg_id = esp_mqtt_client_subscribe(client, topic.c_str(), 0);
 
         if (msg_id != -1)
         {

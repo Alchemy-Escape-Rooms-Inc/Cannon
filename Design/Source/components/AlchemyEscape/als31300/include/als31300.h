@@ -16,28 +16,7 @@ namespace ALS31300
         bool write(uint8_t reg, uint32_t value);
         bool read(uint8_t reg, uint32_t& value);
 
-        // I2C Interface
-        typedef bool (*ExchangeCallback)(uint8_t address, uint8_t* sendPayload, size_t sendSize, uint8_t* receivePayload, size_t receiveSize);
-        typedef bool (*WriteCallback)(uint8_t address, uint8_t* sendPayload, size_t sendSize);
-        typedef bool (*RegisterCallback)(uint8_t address);
-        typedef bool (*UnregisterCallback)(uint8_t address);
-        typedef bool (*ChangeAddressCallback)(uint8_t oldAddress, uint8_t newAddress);
-
-        static bool defaultExchangeCallback(uint8_t, uint8_t*, size_t, uint8_t*, size_t) { return false; }
-        static bool defaultWriteCallback(uint8_t, uint8_t*, size_t) { return false; }
-        static bool defaultRegisterCallback(uint8_t) { return false; }
-        static bool defaultUnregisterCallback(uint8_t) { return false; }
-        static bool defaultChangeAddressCallback(uint8_t, uint8_t) { return false; }
-
-        static ExchangeCallback i2cExchange;
-        static WriteCallback i2cWrite;
-        static RegisterCallback i2cRegister;
-        static UnregisterCallback i2cUnregister;
-        static ChangeAddressCallback i2cChangeAddress;
-
     public:
-        static void setCallbacks(RegisterCallback registerCallback, UnregisterCallback unregisterCallback, ChangeAddressCallback changeAddressCallback, WriteCallback writeCallback, ExchangeCallback exchangeCallback);
-
         Sensor() {}
         Sensor(uint8_t address);
         ~Sensor();

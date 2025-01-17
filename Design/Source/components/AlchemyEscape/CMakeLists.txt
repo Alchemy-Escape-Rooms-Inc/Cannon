@@ -19,6 +19,8 @@ idf_component_register(SRCS
 "vl53l0x/platform/src/vl53l0x_i2c_comms.cpp"
 "vl53l0x/platform/src/vl53l0x_platform.cpp"
 
+"vl6180x/VL6180X.cpp"
+
 "wrapper/Arduino.cpp"
 "wrapper/Wire.cpp"
 
@@ -29,5 +31,7 @@ INCLUDE_DIRS
 "time/include"
 "vl53l0x/include"
 "wrapper/include"
+
+"vl6180x/inc"
 
 REQUIRES driver esp_timer)

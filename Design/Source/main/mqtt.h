@@ -6,7 +6,7 @@ namespace MQTT
 {
     typedef void (*SubscribeCallback)(std::string data);
 
-    void init();
+    bool init();
     void publish(std::string topic, std::string payload);
     void subscribe(std::string topic, SubscribeCallback callback);
 }

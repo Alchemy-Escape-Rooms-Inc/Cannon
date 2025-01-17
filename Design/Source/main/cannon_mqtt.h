@@ -19,15 +19,17 @@ namespace Cannon
         {
             Trigger,
             Angle,
-            Percent
+            Percent,
+            Debug
         };
 
         PayloadType type;
 
         MqttTopic(PayloadType type);
 
-        void init();
+        void init(uint8_t id, std::string name);
         void setTopic(uint8_t id, std::string name);
         void publish(int value = -1);
+        void reset();
     };
 }

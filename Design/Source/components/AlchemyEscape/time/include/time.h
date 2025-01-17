@@ -7,4 +7,5 @@ namespace Time
 {
     int64_t ms();
     bool elapsed(int64_t last, size_t length);
+    void wait(int64_t duration);
 }

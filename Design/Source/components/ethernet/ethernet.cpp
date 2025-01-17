@@ -156,28 +156,28 @@ namespace Ethernet
         }
     }
 
-    void init()
+    bool init()
     {
         esp_err_t ret = ESP_OK;
 
-        ESP_RETURN_VOID_ON_ERROR(spi_bus_init(), TAG, "SPI bus init failed");
+        ESP_RETURN_FALSE_ON_ERROR(spi_bus_init(), TAG, "SPI bus init failed");
         
         // The SPI Ethernet module(s) might not have a burned factory MAC address, hence use manually configured address(es).
         // In this example, Locally Administered MAC address derived from ESP32x base MAC address is used.
         // Note that Locally Administered OUI range should be used only when testing on a LAN under your control!
         uint8_t base_mac_addr[ETH_ADDR_LEN];
-        ESP_RETURN_VOID_ON_ERROR(esp_efuse_mac_get_default(base_mac_addr), TAG, "get EFUSE MAC failed");
+        ESP_RETURN_FALSE_ON_ERROR(esp_efuse_mac_get_default(base_mac_addr), TAG, "get EFUSE MAC failed");
         uint8_t local_mac_1[ETH_ADDR_LEN];
         esp_derive_local_mac(local_mac_1, base_mac_addr);
         spi_eth_module_config.mac_addr = local_mac_1;
 
         esp_eth_handle = eth_init_spi(&spi_eth_module_config, NULL, NULL);
-        ESP_RETURN_VOID_ON_FALSE(esp_eth_handle, ESP_FAIL, TAG, "SPI Ethernet init failed");
+        ESP_RETURN_FALSE_ON_FALSE(esp_eth_handle, ESP_FAIL, TAG, "SPI Ethernet init failed");
 
         // Initialize TCP/IP network interface aka the esp-netif (should be called only once in application)
-        ESP_RETURN_VOID_ON_ERROR(esp_netif_init(), TAG, "NETIF Init Failed");
+        ESP_RETURN_FALSE_ON_ERROR(esp_netif_init(), TAG, "NETIF Init Failed");
         // Create default event loop that running in background
-        ESP_RETURN_VOID_ON_ERROR(esp_event_loop_create_default(), TAG, "Event Loop Create Failed");
+        ESP_RETURN_FALSE_ON_ERROR(esp_event_loop_create_default(), TAG, "Event Loop Create Failed");
 
         esp_netif_t* eth_netif;
         esp_eth_netif_glue_handle_t eth_netif_glue;
@@ -191,10 +191,12 @@ namespace Ethernet
         eth_netif_glue = esp_eth_new_netif_glue(esp_eth_handle);
 
         // Attach Ethernet driver to TCP/IP stack
-        ESP_RETURN_VOID_ON_ERROR(esp_netif_attach(eth_netif, eth_netif_glue), TAG, "ESP NETIF Attach Failed");
+        ESP_RETURN_FALSE_ON_ERROR(esp_netif_attach(eth_netif, eth_netif_glue), TAG, "ESP NETIF Attach Failed");
 
         // Start Ethernet
-        ESP_RETURN_VOID_ON_ERROR(esp_eth_start(esp_eth_handle), TAG, "ESP ETH Start Failed");
+        ESP_RETURN_FALSE_ON_ERROR(esp_eth_start(esp_eth_handle), TAG, "ESP ETH Start Failed");
+
+        return true;
     }
 }
 

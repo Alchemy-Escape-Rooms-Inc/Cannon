@@ -1,26 +1,13 @@
 #include "als31300.h"
 #include "registers.h"
 
+#include "i2c.h"
+
 #include <cstdio>
 #include <cmath>
 
 namespace ALS31300
 {
-    Sensor::ExchangeCallback Sensor::i2cExchange = defaultExchangeCallback;
-    Sensor::WriteCallback Sensor::i2cWrite = defaultWriteCallback;
-    Sensor::RegisterCallback Sensor::i2cRegister = defaultRegisterCallback;
-    Sensor::UnregisterCallback Sensor::i2cUnregister = defaultUnregisterCallback;
-    Sensor::ChangeAddressCallback Sensor::i2cChangeAddress = defaultChangeAddressCallback;
-
-    void Sensor::setCallbacks(RegisterCallback registerCallback, UnregisterCallback unregisterCallback, ChangeAddressCallback changeAddressCallback, WriteCallback writeCallback, ExchangeCallback exchangeCallback)
-    {
-        i2cWrite = writeCallback;
-        i2cExchange = exchangeCallback;
-        i2cRegister = registerCallback;
-        i2cUnregister = unregisterCallback;
-        i2cChangeAddress = changeAddressCallback;
-    }
-
     Sensor::Sensor(uint8_t address)
     {
         init(address);
@@ -31,17 +18,19 @@ namespace ALS31300
         address = address & 0x7F;
         this->address = address;
 
-        i2cRegister(address);
+        I2C::registerDevice(address);
     }
 
     Sensor::~Sensor()
     {
-        i2cUnregister(address);
+        I2C::unregisterDevice(address);
     }
 
     bool Sensor::update()
     {
-        uint16_t newX, newY, newZ;
+        uint16_t newX = 0;
+        uint16_t newY = 0;
+        uint16_t newZ = 0;
 
         uint32_t readData;
         if (!read(0x28, readData)) return false;
@@ -58,7 +47,7 @@ namespace ALS31300
         newY |= reg29.yAxisLsbs;
         newZ |= reg29.zAxisLsbs;
 
-        const float filterIntensity = 32.0f;
+        volatile static float filterIntensity = 8.0f;
         x = (float((int16_t) newX) + x * (filterIntensity - 1)) / filterIntensity;
         y = (float((int16_t) newY) + y * (filterIntensity - 1)) / filterIntensity;
         z = (float((int16_t) newZ) + z * (filterIntensity - 1)) / filterIntensity;
@@ -100,7 +89,7 @@ namespace ALS31300
             uint8_t(value >>  0 & 0xFF)
         };
 
-        return i2cWrite(address, sendPayload, 5);
+        return I2C::write(address, sendPayload, 5);
     }
 
     bool Sensor::read(uint8_t reg, uint32_t& value)
@@ -108,7 +97,7 @@ namespace ALS31300
         uint8_t sendPayload = reg;
         uint8_t receivePayload[4];
 
-        if (!i2cExchange(address, &sendPayload, 1, receivePayload, 4)) return false;
+        if (!I2C::exchange(address, &sendPayload, 1, receivePayload, 4)) return false;
 
         value = receivePayload[0] << 24 |
                 receivePayload[1] << 16 |
@@ -120,21 +109,38 @@ namespace ALS31300
 
     uint16_t Sensor::getAngle()
     {
-        // TODO, normalize x and y to skip multiple conversions
+        // Convert new reading to angle and then to x,y
         float currentAngle = angleFromXY(x, y);
         float currentX, currentY;
         xyFromAngle(currentAngle, currentX, currentY);
 
+        // Convert stored avgAngle to x,y
         float avgX, avgY;
         xyFromAngle(avgAngle, avgX, avgY);
 
-        const float filterIntensity = 10.0f;
-        avgX = (currentX + avgX * (filterIntensity - 1)) / filterIntensity;
-        avgY = (currentY + avgY * (filterIntensity - 1)) / filterIntensity;
+        // Compute difference between current and avg
+        float dx = currentX - avgX;
+        float dy = currentY - avgY;
+        float dist = sqrtf(dx * dx + dy * dy);
 
-        avgAngle = angleFromXY(avgX, avgY);
+        // Choose alpha in [0, alphaMax], based on distance
+        // The scaleFactor controls how quickly alpha increases with distance.
+        // For small changes, alpha is small; for large changes, alpha can max out.
+        volatile static float scaleFactor = 4.5f;
+        volatile static float alphaMax    = 0.5f;
+
+        float alpha = dist * scaleFactor;
+        if (alpha > alphaMax) alpha = alphaMax;
         
-        return avgAngle + 0.5f; // Round angle before casting to uint16_t
+        // Blend the average
+        avgX += alpha * dx;
+        avgY += alpha * dy;
+
+        // Convert back to an angle
+        avgAngle = angleFromXY(avgX, avgY);
+
+        // Return integer angle
+        return static_cast<uint16_t>(avgAngle + 0.5f);
     }
 
     float Sensor::angleFromXY(float x, float y)
@@ -153,7 +159,7 @@ namespace ALS31300
         constexpr float PI = float(M_PI);
         constexpr float DEG_TO_RAD (PI / 180.0f);
 
-        x = cos(angle * DEG_TO_RAD);
-        y = sin(angle * DEG_TO_RAD);
+        x = cosf(angle * DEG_TO_RAD);
+        y = sinf(angle * DEG_TO_RAD);
     }
 }

@@ -4,9 +4,12 @@
 #include <vector>
 
 #include <driver/i2c_master.h>
+#include <driver/gpio.h>
+
+#include "esp_log.h"
 
 #define I2C_SCL GPIO_NUM_18
-#define I2C_SDA GPIO_NUM_16
+#define I2C_SDA GPIO_NUM_15
 
 namespace I2C
 {
@@ -24,11 +27,18 @@ namespace I2C
         std::vector<I2CDevice> slaves;
 
         constexpr uint32_t I2C_CLK_SPEED = 100000; // 100KHz to better deal with long cable runs
+
+        const char TAG[] = "I2C";
     }
 
     void init()
     {
         if (initialized) return;
+
+        esp_log_level_set("i2c.master", ESP_LOG_NONE);
+
+        gpio_reset_pin(I2C_SCL);
+        gpio_reset_pin(I2C_SDA);
 
         constexpr i2c_master_bus_config_t i2cBusConfig =
         {
@@ -60,6 +70,8 @@ namespace I2C
     {
         if (!initialized) return false;
 
+        ESP_LOGV(TAG, "Registering device at address %u", address);
+
         i2c_device_config_t masterConfig =
         {
             .dev_addr_length = I2C_ADDR_BIT_LEN_7,
@@ -69,7 +81,11 @@ namespace I2C
 
         i2c_master_dev_handle_t deviceHandle;
         esp_err_t err = i2c_master_bus_add_device(busHandle, &masterConfig, &deviceHandle);
-        if (err != ESP_OK) return false;
+        if (err != ESP_OK)
+        {
+            ESP_LOGV(TAG, "Failed to add device at address %u", address);
+            return false;
+        }
         
         slaves.push_back(I2CDevice(address, deviceHandle));
         return true;
@@ -118,9 +134,13 @@ namespace I2C
         if (!initialized) return false;
 
         i2c_master_dev_handle_t deviceHandle;
-        if (!getDevice(address, deviceHandle)) return false;
+        if (!getDevice(address, deviceHandle))
+        {
+            ESP_LOGE(TAG,"Device %u not found", address);
+            return false;
+        }
 
-        esp_err_t err = i2c_master_transmit_receive(deviceHandle, sendPayload, sendSize, receivePayload, receiveSize, 10);
+        esp_err_t err = i2c_master_transmit_receive(deviceHandle, sendPayload, sendSize, receivePayload, receiveSize, 200);
         return err == ESP_OK;
     }
 
