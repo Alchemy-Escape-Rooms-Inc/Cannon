@@ -34,30 +34,14 @@ namespace Cannon
         if (!reloadSensor.isInitialized()) reloadSensor.init();
         else
         {
-            if (reloadSensor.triggered()) doReload();
-            // clear error interrupt
-            //else reloadSensor.clearInterrupts();
+            if (Time::elapsed(lastReloadUpdate, 50))
+            {
+                lastReloadUpdate = Time::ms();
+                if (reloadSensor.triggered()) doReload();
+            }
         }
 
         checkLoaded();
-
-        // if (Time::elapsed(lastDepthUpdate, 50))
-        // {
-        //     lastDepthUpdate = Time::ms();
-
-        //     uint8_t status = reloadSensor.readRangeStatus();
-        //     VL6180X::ReadStatus err = reloadSensor.readRange(range);
-
-        //     if (err == VL6180X::ReadStatus::ReadOkay && status == VL6180X_ERROR_NONE)
-        //     {
-        //         
-        //         depthDebugTopic.publish(range);
-        //     }
-        //     else
-        //     {
-        //         ESP_LOGE("Cannon", "Status: %u, read result: %u", status, (int) err);
-        //     }
-        // }
         
         if (aimSensor.update())
         {
@@ -70,6 +54,7 @@ namespace Cannon
 
         if (Pins::getInput(firePin))
         {
+            ESP_LOGI(TAG, "Button pressed.");
             checkFire();
         }
     }

@@ -43,6 +43,7 @@ namespace Cannon
         int64_t loadedTime = 0;
         int64_t lastAngleUpdate = 0;
         int64_t lastDepthUpdate = 0;
+        int64_t lastReloadUpdate = 0;
 
     public:
         void init();
