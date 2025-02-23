@@ -44,6 +44,7 @@ void VL6180X::init()
 
     // Clear reset flag
     if (!writeByte(VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET, 0x00)) return;
+    clearInterrupts();
 
     // Reset success
     initialized = true;
@@ -140,16 +141,24 @@ bool VL6180X::isInitialized()
 bool VL6180X::triggered()
 {
     bool ret = Pins::getInput(intPin);
-    if (ret) write8(VL6180X_REG_SYSTEM_INTERRUPT_CLEAR, 0b001);
-
+    if (!ret) return false;
+    
     uint8_t read;
-    if (readByte(VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET, read)) // Added for debugging to see if chip was resetting. It isn't but the read adjusts timings enough that the sensor stops locking up.
-    {
-        if (read & 0x01) ESP_LOGE(TAG, "IN RESET!");
-    }
+    if (!readByte(VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO, read)) return false;
 
+    std::string regBits = "0b";
+    for (int i = 7; i >= 0; i--)
+    {
+        regBits += read & (1 << i) ? "1" : "0";
+    }
+    ESP_LOGE(TAG, "%s", regBits.c_str());
+
+    //if (!(read & 0b100)) return false;
+
+    if (!readByte(VL6180X_REG_RESULT_RANGE_VAL, read)) return false;
     clearInterrupts();
-    return ret;
+
+    return true;
 }
 
 void VL6180X::clearInterrupts()

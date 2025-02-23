@@ -9,6 +9,7 @@ namespace Pins
         resetPin(pin);
         gpio_set_direction(pin, mode);
         if (mode == GPIO_MODE_OUTPUT) gpio_set_level(pin, defaultHigh);
+        else if (defaultHigh) gpio_pulldown_en(pin);
     }
 
     void resetPin(gpio_num_t pin)

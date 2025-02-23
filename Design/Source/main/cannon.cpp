@@ -19,7 +19,7 @@ namespace Cannon
         horTopic.init(topicId, "Hor");
         firedTopic.init(topicId, "Fired");
 
-        Pins::initPin(firePin, GPIO_MODE_INPUT);
+        Pins::initPin(firePin, GPIO_MODE_INPUT, true);
         Pins::initPin(iotPin, GPIO_MODE_OUTPUT, true);
 
         I2C::init();
@@ -54,7 +54,7 @@ namespace Cannon
 
         if (Pins::getInput(firePin))
         {
-            ESP_LOGI(TAG, "Button pressed.");
+            //ESP_LOGI(TAG, "Button pressed.");
             checkFire();
         }
     }

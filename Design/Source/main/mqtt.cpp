@@ -24,7 +24,7 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-#define CONFIG_BROKER_URL "mqtt://192.168.0.175"
+#define CONFIG_BROKER_URL "mqtt://10.1.10.130"
 
 namespace MQTT
 {
